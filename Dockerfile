@@ -1,14 +1,12 @@
-FROM rust:1.41.0 as build
+FROM rust:1.50.0 as build
 
+RUN rustup target add x86_64-unknown-linux-musl
 WORKDIR /workspace
 ADD . .
 
-ENV RUSTFLAGS="-C target-feature=-crt-static"
-RUN cargo build --release
+RUN cargo build --target x86_64-unknown-linux-musl --release
 
-FROM debian
-
-RUN apt update && apt install -y openssl ca-certificates
+FROM gcr.io/moonrhythm-containers/go-scratch
 
 WORKDIR /app
 COPY --from=build /workspace/target/release/cors-proxy /app/cors-proxy
